@@ -1,4 +1,4 @@
-# app.py — Streamlit Cloud Compatible App (Using Hugging Face Inference API Directly)
+# app.py — Fixed Version 1: Extract generated text properly
 
 import streamlit as st
 st.set_page_config(page_title="NutriSyn AI", layout="centered")
@@ -33,24 +33,44 @@ condition = st.selectbox("Select a Health Condition", sorted(data['Condition'].u
 age_group = st.selectbox("Age Group", sorted(data['Age Group'].unique()))
 target = st.button("Get Recommendations")
 
-# Prompt template for Zephyr chat format
+# Simplified prompt for better results
 def build_prompt(region, condition, age_group):
-    return f"""
-<|system|>
-You are a helpful public health nutrition advisor.
-<|user|>
-Based on the condition: {condition}, region: {region}, and age group: {age_group},
-suggest three crop-based nutritional interventions and explain briefly why each is suitable.
-<|assistant|>
-"""
+    return f"""Based on the health condition "{condition}" in {region} for {age_group}, recommend 3 specific crops that could help address nutritional needs. For each crop, briefly explain its nutritional benefits.
 
-# Function to query Hugging Face API
+Recommendations:"""
+
+# Function to query Hugging Face API with better text extraction
 def query_huggingface(payload):
-    response = requests.post(api_url, headers=headers, json={"inputs": payload})
-    if response.status_code == 200:
-        return response.json()[0]['generated_text']
-    else:
-        return f"Error: {response.status_code} - {response.text}"
+    try:
+        response = requests.post(
+            api_url, 
+            headers=headers, 
+            json={
+                "inputs": payload,
+                "parameters": {
+                    "max_new_tokens": 200,
+                    "temperature": 0.7,
+                    "do_sample": True,
+                    "return_full_text": False  # This should return only generated text
+                }
+            }
+        )
+        if response.status_code == 200:
+            result = response.json()
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get('generated_text', '')
+                
+                # If the full prompt is still included, extract only the new part
+                if payload in generated_text:
+                    generated_text = generated_text.replace(payload, '').strip()
+                
+                return generated_text if generated_text else "No response generated."
+            else:
+                return "Unexpected response format."
+        else:
+            return f"Error: {response.status_code} - {response.text}"
+    except Exception as e:
+        return f"Error querying API: {str(e)}"
 
 # Output area
 if target:
@@ -65,8 +85,9 @@ if target:
         st.markdown("No dataset match found. Using AI agent for recommendations:")
 
     st.subheader("AI Agent Recommendation")
-    prompt = build_prompt(region, condition, age_group)
-    result = query_huggingface(prompt)
-    st.write(result)
+    with st.spinner("Generating recommendations..."):
+        prompt = build_prompt(region, condition, age_group)
+        result = query_huggingface(prompt)
+        st.write(result)
 
     st.markdown("\n**Note:** This is a prototype using public and synthetic data. For clinical use, consult dietary professionals.")
