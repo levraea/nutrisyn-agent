@@ -9,7 +9,7 @@ import json
 
 # Load Hugging Face API key from Streamlit Secrets
 hf_api_key = st.secrets["huggingface_api_key"]
-api_url = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+api_url = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
 headers = {"Authorization": f"Bearer {hf_api_key}"}
 
 # Load mock data
