@@ -2,4 +2,5 @@ streamlit
 pandas
 langchain
 langchain-community
-together
+transformers
+huggingface_hub
