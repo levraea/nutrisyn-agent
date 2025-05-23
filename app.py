@@ -1,14 +1,13 @@
-# app.py — Streamlit Cloud Compatible App (Using Together.AI)
+# app.py — Streamlit Cloud Compatible App (Using Hugging Face Inference API)
 
 import streamlit as st
 import pandas as pd
-import os
 from langchain.chains import LLMChain
-from langchain.llms import Together
+from langchain.llms import HuggingFaceHub
 from langchain.prompts import PromptTemplate
 
-# Load Together API key from Streamlit Secrets
-together_api_key = st.secrets["together_api_key"]
+# Load Hugging Face API key from Streamlit Secrets
+hf_api_key = st.secrets["huggingface_api_key"]
 
 # Load mock data
 @st.cache_data
@@ -32,11 +31,11 @@ condition = st.selectbox("Select a Health Condition", sorted(data['Condition'].u
 age_group = st.selectbox("Age Group", sorted(data['Age Group'].unique()))
 target = st.button("Get Recommendations")
 
-# LangChain setup with Together.AI model
-llm = Together(
-    model="togethercomputer/llama-2-13b-chat",
-    temperature=0.5,
-    together_api_key=together_api_key
+# LangChain setup with Hugging Face
+llm = HuggingFaceHub(
+    repo_id="mistralai/Mistral-7B-Instruct-v0.1",
+    model_kwargs={"temperature": 0.5},
+    huggingfacehub_api_token=hf_api_key
 )
 
 prompt = PromptTemplate(
