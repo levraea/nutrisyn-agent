@@ -35,7 +35,12 @@ target = st.button("Get Recommendations")
 
 # Simplified prompt for better results
 def build_prompt(region, condition, age_group):
-    return f"""Based on the health condition "{condition}" in {region} for {age_group}, recommend 3 specific crops that could help address nutritional needs. For each crop, briefly explain its nutritional benefits.
+    return f"""Based on the health condition "{condition}" in {region} for {age_group}, provide exactly 3 specific crop recommendations. For each crop, explain its nutritional benefits and why it's suitable for this condition.
+
+Format your response as:
+1. [Crop Name]: [Detailed explanation]
+2. [Crop Name]: [Detailed explanation] 
+3. [Crop Name]: [Detailed explanation]
 
 Recommendations:"""
 
@@ -48,10 +53,12 @@ def query_huggingface(payload):
             json={
                 "inputs": payload,
                 "parameters": {
-                    "max_new_tokens": 200,
+                    "max_new_tokens": 500,  # Increased for longer responses
                     "temperature": 0.7,
                     "do_sample": True,
-                    "return_full_text": False  # This should return only generated text
+                    "return_full_text": False,
+                    "stop": ["<|user|>", "<|system|>"],  # Stop tokens to prevent rambling
+                    "repetition_penalty": 1.1  # Reduce repetition
                 }
             }
         )
