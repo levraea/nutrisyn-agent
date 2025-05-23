@@ -5,7 +5,7 @@ st.set_page_config(page_title="NutriSyn AI", layout="centered")
 
 import pandas as pd
 from langchain.chains import LLMChain
-from langchain.llms import HuggingFaceHub
+from langchain_community.llms import HuggingFaceHub
 from langchain.prompts import PromptTemplate
 
 # Load Hugging Face API key from Streamlit Secrets
@@ -32,10 +32,10 @@ condition = st.selectbox("Select a Health Condition", sorted(data['Condition'].u
 age_group = st.selectbox("Age Group", sorted(data['Age Group'].unique()))
 target = st.button("Get Recommendations")
 
-# LangChain setup with Hugging Face
+# LangChain setup with Hugging Face (using compatible model)
 llm = HuggingFaceHub(
-    repo_id="mistralai/Mistral-7B-Instruct-v0.1",
-    model_kwargs={"temperature": 0.5},
+    repo_id="tiiuae/falcon-7b-instruct",
+    model_kwargs={"temperature": 0.5, "max_new_tokens": 256},
     huggingfacehub_api_token=hf_api_key
 )
 
