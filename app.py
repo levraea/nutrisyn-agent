@@ -33,13 +33,15 @@ condition = st.selectbox("Select a Health Condition", sorted(data['Condition'].u
 age_group = st.selectbox("Age Group", sorted(data['Age Group'].unique()))
 target = st.button("Get Recommendations")
 
-# Prompt template
+# Prompt template for Zephyr chat format
 def build_prompt(region, condition, age_group):
     return f"""
-You are a public health nutrition advisor.
+<|system|>
+You are a helpful public health nutrition advisor.
+<|user|>
 Based on the condition: {condition}, region: {region}, and age group: {age_group},
-suggest three appropriate crop-based nutritional interventions.
-Explain briefly why each is suitable.
+suggest three crop-based nutritional interventions and explain briefly why each is suitable.
+<|assistant|>
 """
 
 # Function to query Hugging Face API
