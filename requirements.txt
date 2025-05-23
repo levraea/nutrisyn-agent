@@ -1,6 +1,3 @@
 streamlit
 pandas
-langchain==0.1.14
-langchain-community==0.0.21
-huggingface_hub==0.20.3
-transformers==4.39.3
+requests
