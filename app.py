@@ -1,6 +1,8 @@
 # app.py — Streamlit Cloud Compatible App (Using Hugging Face Inference API)
 
 import streamlit as st
+st.set_page_config(page_title="NutriSyn AI", layout="centered")
+
 import pandas as pd
 from langchain.chains import LLMChain
 from langchain.llms import HuggingFaceHub
@@ -17,7 +19,6 @@ def load_data():
 data = load_data()
 
 # Title and description
-st.set_page_config(page_title="NutriSyn AI", layout="centered")
 st.title("NutriSyn: Nutrition + Therapeutics AI Agent")
 st.markdown("""
 This AI agent helps public health professionals, clinicians, and agronomists identify nutrition-enhancing crop interventions aligned with chronic disease trends.
