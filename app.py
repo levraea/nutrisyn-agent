@@ -1,15 +1,16 @@
-# app.py — Streamlit Cloud Compatible App (Using Hugging Face Inference API)
+# app.py — Streamlit Cloud Compatible App (Using Hugging Face Inference API Directly)
 
 import streamlit as st
 st.set_page_config(page_title="NutriSyn AI", layout="centered")
 
 import pandas as pd
-from langchain.chains import LLMChain
-from langchain_community.llms import HuggingFaceHub
-from langchain.prompts import PromptTemplate
+import requests
+import json
 
 # Load Hugging Face API key from Streamlit Secrets
 hf_api_key = st.secrets["huggingface_api_key"]
+api_url = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+headers = {"Authorization": f"Bearer {hf_api_key}"}
 
 # Load mock data
 @st.cache_data
@@ -32,21 +33,22 @@ condition = st.selectbox("Select a Health Condition", sorted(data['Condition'].u
 age_group = st.selectbox("Age Group", sorted(data['Age Group'].unique()))
 target = st.button("Get Recommendations")
 
-# LangChain setup with Hugging Face (using compatible model)
-llm = HuggingFaceHub(
-    repo_id="tiiuae/falcon-7b-instruct",
-    model_kwargs={"temperature": 0.5, "max_new_tokens": 256},
-    huggingfacehub_api_token=hf_api_key
-)
-
-prompt = PromptTemplate(
-    input_variables=["region", "condition", "age_group"],
-    template="""
-You are a public health nutrition advisor. Based on the condition: {condition}, region: {region}, and age group: {age_group}, suggest three appropriate crop-based nutritional interventions. Explain briefly why each is suitable.
+# Prompt template
+def build_prompt(region, condition, age_group):
+    return f"""
+You are a public health nutrition advisor.
+Based on the condition: {condition}, region: {region}, and age group: {age_group},
+suggest three appropriate crop-based nutritional interventions.
+Explain briefly why each is suitable.
 """
-)
 
-chain = LLMChain(llm=llm, prompt=prompt)
+# Function to query Hugging Face API
+def query_huggingface(payload):
+    response = requests.post(api_url, headers=headers, json={"inputs": payload})
+    if response.status_code == 200:
+        return response.json()[0]['generated_text']
+    else:
+        return f"Error: {response.status_code} - {response.text}"
 
 # Output area
 if target:
@@ -61,7 +63,8 @@ if target:
         st.markdown("No dataset match found. Using AI agent for recommendations:")
 
     st.subheader("AI Agent Recommendation")
-    result = chain.run({"region": region, "condition": condition, "age_group": age_group})
+    prompt = build_prompt(region, condition, age_group)
+    result = query_huggingface(prompt)
     st.write(result)
 
     st.markdown("\n**Note:** This is a prototype using public and synthetic data. For clinical use, consult dietary professionals.")
